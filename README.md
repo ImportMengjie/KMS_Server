@@ -243,5 +243,36 @@ code | msg | HTTP
         'name':(string),
         'phone',(string),
         'email',(string),
-        'birth',(strin)
+        'birth',(string)
     }
+
+### 获取自己文件列表
+    # 获取自己文件列表
+    route:
+        '/app/user/getownfilelist', methods=['POST']
+    required:
+    {
+    
+    }
+    return:
+    {
+        'fidlist':[(string),,,],
+        'namelist':[(string),,,],
+        'datelist':[(long),,,],
+        
+        
+    }
+    
+### 获取推荐列表
+    # 获取推荐文件列表
+    route:
+        '/app/user/getfilelist',methods=['Post']
+    required:
+    {
+    
+    }
+    return:
+    {
+    
+    }
+    

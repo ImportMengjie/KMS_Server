@@ -31,18 +31,27 @@ class User(db.Document):
         if validate_phone(phone):
             self.phone = phone
 
+class Classify(db.Document):
+    name = db.StringField()
+    id = db.LongField()
+
 class File(db.Document):
     upload_user = db.ReferenceField(User)
     md5 = db.StringField()
     sum_point = db.LongField(default=1)
     upload_date = db.DateTimeField()
     file = db.FileField()
-    type = db.StringField()
+
 
 class UserFile(db.Document):
     name = db.StringField()
     date = db.DateTimeField()
     file = db.ReferenceField(File)
+    classify = db.ReferenceField(Classify)
+    user = db.ReferenceField(User)
+
+
+
 
 
 # class FileDocument(db.Document):
