@@ -23,15 +23,12 @@
             //必返回项
             'done':(bool),
             'code':(int),
-            'msg':(string),
-            <!--// 可选项-->
-            <!--'data':(string), # base64编码-->
-            <!--'fid':(string), # 文件id-->
+            'msg':(string)
         }
 
 ## 返回值:code && msg && HTTP stat code
 
-0. 通用(0~99)
+通用(0~99)
 
 code | msg | HTTP
 ---|---|---
@@ -40,60 +37,16 @@ code | msg | HTTP
 3 | token过期 | HTTP_Forbidden
 4 | 没有token | HTTP_Forbidden
 
-
-
-1. 注册(100~109)
+---
+           
+### 注册:
 
 code | msg | HTTP
 ---|---|---
 100 | 注册成功 | HTTP_Created
 101 | 该手机号已被注册(跳转登录?) | HTTP_Forbidden
-102 | 该手机号未被注册 | HTTP_OK
-
-
-
-2. 登录(110~119)
-
-code | msg | HTTP
----|---|---
-110 | 登录成功 | HTTP_OK
-111 | 没找到此用户 | HTTP_NotFound
-112 | 密码错误 | HTTP_Forbidden
-
-
-3. 头像(120~129)
-
-code | msg | HTTP
----|---|---
-120 | 上传成功 | HTTP_Created
-121 | 获取头像成功 | HTTP_OK
-
-
-4. 上传文件(130~139)
-
-code | msg | HTTP
----|---|---
-130 | 上传成功 | HTTP_Created
-131 | 创建成功 | HTTP_Created
-
-
-5. 获取文件(140~149)
-
-code | msg | HTTP
----|---|---
-140 | 获取成功 | HTTP_OK
-
-
-6. 修改用户信息(150~159)
-
-code | msg | HTTP
----|---|---
-150 | 修改成功 | HTTP_OK
-151 | 没有任何改变 | HTTP_Forbidden
-
-
-
-### 注册:
+102 | 该手机号未被注册 | HTTP_OK   
+ 
 
     # 注册
     route:
@@ -123,6 +76,13 @@ code | msg | HTTP
 
 
 ### 登录:
+
+code | msg | HTTP
+---|---|---
+110 | 登录成功 | HTTP_OK
+111 | 没找到此用户 | HTTP_NotFound
+112 | 密码错误 | HTTP_Forbidden
+
     # 登录:
     route:
         '/app/login', methods=['Post']
@@ -140,12 +100,39 @@ code | msg | HTTP
                 'token':(string) #以后每次发送请求都要带上token,并且应该保存在客户端
             }
 
+### 查看热门
+
+    # 查看热门
+    route:
+        /app/see,methods=['Get']
+    required:
+    {
+    
+    }
+    return:
+        {
+        'total':(long),
+        'tag':(long),
+        'fidlist':[(string),,,],
+        'namelist':[(string),,,],
+        'datelist':[(long),,,],
+        'classfiylist':[(string),,,],
+        'summarylist':[(string),,,],
+        'username':(string),
+        'userid':(string) 
+        }
 
 ---
 以下需要传入token,可能会产生的code(3,4)
 
-
+  
 ### 头像?
+
+code | msg | HTTP
+---|---|---
+120 | 上传成功 | HTTP_Created
+121 | 获取头像成功 | HTTP_OK
+
     # 上传头像
     route:
         /app/user/avatar', methods=['Post']
@@ -159,7 +146,7 @@ code | msg | HTTP
 
     # 获取头像
     route:
-        '/app/user/get_avatar', methods=['Post']
+        '/app/user/get_avatar', methods=['Get']
     required:
     {
 
@@ -172,6 +159,12 @@ code | msg | HTTP
     }
 
 ### 上传文件
+
+code | msg | HTTP
+---|---|---
+130 | 上传成功 | HTTP_Created
+131 | 创建成功 | HTTP_Created
+
     # 上传文件
     route:
         '/app/user/upload', methods=['Post']
@@ -180,12 +173,15 @@ code | msg | HTTP
     {
         'md5':(string) # 文件的md5码
         'name':(string) # 文件的title
+        'public':(bool) # 是否公开
     }
     return:
     code(2,131)
     if code==131:
     {
         fid=(string) #以后获取该资源发送fid获取
+        classify:(string) # 推荐分类
+        summary:(string) # 摘要
     }
 
     2. 文件若是不存在上传文件
@@ -193,17 +189,30 @@ code | msg | HTTP
     {
         'name':(string) # 文件的title
         'data':(strin) # 文件的data
+        'public':(bool)# 是否公开
     }
     return:
     code(130)
     {
         fid=(string) #以后获取该资源发送fid获取
+        classify:(string) # 推荐分类
+        summary:(string) # 摘要
     }
+    
+    
 
-### 获取文件
+### 获取文件,修改文件
+
+code | msg | HTTP
+---|---|---
+140 | 获取成功 | HTTP_OK
+141 | 修改成功 | HTTP_OK
+142 | 删除成功 | HTTP_OK
+143 | 没有修改 | HTTP_Forbidden
+
     ＃ 获取文件
     route:
-        '/app/user/getfile', methods=['Post']
+        '/app/user/getfile', methods=['Get']
     required:
     {
         'fid':(string)
@@ -212,15 +221,39 @@ code | msg | HTTP
     code(140,2)
     if code==140:
     {
-        'data':(string)
-        'name':(string)
+        'data':(string),
+        'name':(string),
+        'summary':(string),
+        'classify':(string),
     }
+    
+    # 修改文件
+    route:
+        '/app/user/modifyfile', methods=['Post']
+    required:
+    {
+        'fid':(string),
+        'public':(bool),
+        'name':(string),
+        'classify':(string) # 修改的分类
+        'delete':(bool) # 是否删除
+    }
+    return:
+    code(142,143)
+ 
+    
 
 
 ### 修改用户信息
+
+code | msg | HTTP
+---|---|---
+150 | 修改成功 | HTTP_OK
+151 | 没有任何改变 | HTTP_Forbidden
+
     # 修改用户信息,如果其中一项没有修改不传即可
     route:
-        '/app/user/modify', methods=['POST']
+        '/app/user/modifyinfo', methods=['POST']
     required:
     {
         'name':(string)
@@ -233,12 +266,13 @@ code | msg | HTTP
 ### 获取用户信息
     # 获取用户信息
     route:
-        '/app/user/info', methods=['POST']
+        '/app/user/info', methods=['Get']
     required:
     {
-
+        'userid':(string) # 如果没有此项则获取自己的信息
     }
     return:
+    code(2)
     {
         'name':(string),
         'phone',(string),
@@ -247,32 +281,133 @@ code | msg | HTTP
     }
 
 ### 获取自己文件列表
-    # 获取自己文件列表
+    # 获取自己编写的文件列表
     route:
-        '/app/user/getownfilelist', methods=['POST']
+        '/app/user/getownfilelist', methods=['Get']
     required:
     {
     
     }
     return:
     {
+        'total':(long),
         'fidlist':[(string),,,],
         'namelist':[(string),,,],
         'datelist':[(long),,,],
-        
+        'classfiylist':[(string),,,],
+        'summarylist':[(string),,,]
+        'public':[(bool),,,]# 是否公开
         
     }
     
 ### 获取推荐列表
     # 获取推荐文件列表
     route:
-        '/app/user/getfilelist',methods=['Post']
+        '/app/user/getfilelist',methods=['Get']
     required:
     {
     
     }
     return:
     {
+        'total':(long),
+        'tag':(long),
+        'fidlist':[(string),,,],
+        'namelist':[(string),,,],
+        'datelist':[(long),,,],
+        'classfiylist':[(string),,,],
+        'summarylist':[(string),,,],
+        'username':(string),
+        'userid':(string)
+    }
+  
+### 收藏
+
+code | msg | HTTP
+---|---|---
+160 | 收藏成功 | HTTP_OK
+161 | 已经收藏过了 | HTTP_Forbidden
+162 | 取消收藏成功 | HTTP_OK
+163 | 它不是你的收藏 | HTTP_Forbidden
+    
+    # 收藏
+    route:
+        '/app/user/favorite',methods=['Post']
+    required:
+    {
+        'fid':(string)
+    }
+    return:
+    code(160,161)
+    
+    # 取消收藏
+    route:
+        '/app/user/favorite',methods=['Post']
+    required:
+    {
+        'fid':(string)
+        'cancel':(bool)
+    }
+    return:
+    code(162,163)
+    
+    # 获取用户收藏列表
+    route:
+        '/app/user/favorite',methods=['Get']
+    required:
+    {
     
     }
+    return:
+    {
+        'total':(long),
+        'fidlist':[(string),,,],
+        'namelist':[(string),,,],
+        'datelist':[(long),,,],
+        'classfiylist':[(string),,,],
+        'summarylist':[(string),,,],
+        'username':(string),
+        'userid':(string)
+    } 
+    
+# 搜索
+code | msg | HTTP
+---|---|---
+170 | 搜索成功 | HTTP_OK
+171 | NotFound | HTTP_NotFound
+    
+    #搜索
+    route:
+       '/app/user/search',methods=['Post']
+    required:
+    {
+        'keyword':(string)
+    }
+    return:
+    {
+        # 自己的文件列表,包括收藏的
+        'owntotal':(long),
+        'ownfidlist':[(string),,,],
+        'ownnamelist':[(string),,,],
+        'owndatelist':[(long),,,],
+        'ownclassfiylist':[(string),,,],
+        'ownsummarylist':[(string),,,],
+        'publiclist':[(bool),,,],
+        
+        # 他人的文件列表
+        'total':(long),
+        'fidlist':[(string),,,],
+        'namelist':[(string),,,],
+        'datelist':[(long),,,],
+        'classfiylist':[(string),,,],
+        'summarylist':[(string),,,],
+        'username':(string),
+        'userid':(string)
+    }
+    
+
+
+
+    
+    
     
