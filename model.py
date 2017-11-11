@@ -16,6 +16,8 @@ class User(db.Document):
     birth = db.DateTimeField()
     photo = db.ImageField(thumbnail_size=(60,60,True))
     token = db.StringField()
+    list_own = db.ListField(db.ReferenceField(UserFile))
+    list_favorite = db.ListField(db.ReferenceField(UserFile))
     def hash_password(self, password):
         if password:
             self.password = pwd_context.encrypt(password)
@@ -41,64 +43,21 @@ class File(db.Document):
     sum_point = db.LongField(default=1)
     upload_date = db.DateTimeField()
     file = db.FileField()
+    summary = db.StringField()
+    text = db.StringField()
 
 
 class UserFile(db.Document):
     name = db.StringField()
     date = db.DateTimeField()
     file = db.ReferenceField(File)
+    userclassify = db.StringField()
     classify = db.ReferenceField(Classify)
     user = db.ReferenceField(User)
+    public = db.BoolField()
 
 
 
-
-
-# class FileDocument(db.Document):
-#     meta = {
-#         'allow_inheritance': True,
-#     }
-#     upload_user = db.ReferenceField(User)
-#     md5 = db.StringField()
-#     sum_point = db.LongField()
-#     upload_date = db.DateTimeField()
-#
-# class File(db.Document):
-#     meta = {
-#         'allow_inheritance': True,
-#     }
-#     name = db.StringField()
-#     date = db.DateTimeField()
-#
-#
-# class VoiceFile(FileDocument):
-#     file = db.BinaryField()
-#
-# class VideoFile(FileDocument):
-#     file = db.FileField()
-#
-# class TextFile(FileDocument):
-#     file = db.StringField()
-#
-# class RichTextFile(FileDocument):
-#     file = db.FileField()
-#
-#
-#
-#
-# class Voice(File):
-#     file = db.ReferenceField(VoiceFile)
-#
-#
-# class Video(File):
-#     file = db.ReferenceField(VideoFile)
-#
-#
-# class Text(File):
-#     file = db.ReferenceField(TextFile)
-#
-# class RichText(File):
-#     file = db.ReferenceField(RichTextFile)
 
 
 def validate_phone(phone: str):

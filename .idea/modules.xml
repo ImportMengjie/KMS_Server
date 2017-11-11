@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../KMS_Server/.idea/KMS_Server.iml" filepath="$PROJECT_DIR$/../KMS_Server/.idea/KMS_Server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/KMS_Server.iml" filepath="$PROJECT_DIR$/.idea/KMS_Server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../algorithm_1/.idea/algorithm_1.iml" filepath="$PROJECT_DIR$/../algorithm_1/.idea/algorithm_1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../pytorch-beginner/.idea/pytorch-beginner.iml" filepath="$PROJECT_DIR$/../pytorch-beginner/.idea/pytorch-beginner.iml" />
     </modules>
   </component>
 </project>
