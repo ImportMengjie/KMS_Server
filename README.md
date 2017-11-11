@@ -32,10 +32,11 @@
 
 code | msg | HTTP
 ---|---|---
-1 | 格式错误 | HTTP_Forbidden
+1 | 格式错误 | HTTP_Bad_Request
 2 | 没找到该资源 | HTTP_NotFound
-3 | token过期 | HTTP_Forbidden
-4 | 没有token | HTTP_Forbidden
+3 | token过期 | HTTP_Unauthorized
+4 | 没有token | HTTP_Unauthorized
+5 | 服务器内部出错 | HTTP_Server_Error
 
 ---
            
@@ -374,7 +375,6 @@ code | msg | HTTP
 code | msg | HTTP
 ---|---|---
 170 | 搜索成功 | HTTP_OK
-171 | NotFound | HTTP_NotFound
     
     #搜索
     route:
