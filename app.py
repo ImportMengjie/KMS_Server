@@ -26,29 +26,29 @@ def register():
     u.set_email(request.json.get('email'))
     u.hash_password(request.json.get('password'))
     if len(request.json.get('password')) < 6:
-        return jsonify({json_success: False, json_msg: '密码太短'})
+        return jsonify(dic_comm_format_error)
     try:
         u.save()
     except NotUniqueError as e:
         print(e)
-        return jsonify({json_success: False, 'msg': msg_has_been_register}), 403
+        return jsonify(dic_register_has_been_register), 403
     except ValidationError as e:
         print(e)
-        return jsonify({json_success: False, 'msg': msg_format_error}), 403
+        return jsonify(dic_comm_format_error), 403
     except BaseException as e:
         print(e)
-        return jsonify({json_success: False, 'msg': msg_server_error}), 500
-    return jsonify({json_success: True, 'msg': msg_register_success}), 201
+        return jsonify(dic_comm_server_error), 500
+    return jsonify(dic_register_success), 201
 
 
 @app.route('/app/register/testphone', methods=['Post'])
 def test_phone():
     phone = request.json.get('phone')
     if not validate_phone(phone):
-        return jsonify({json_success: False, 'msg': msg_format_error}), 403
+        return jsonify(dic_comm_format_error), 403
     if User.objects(phone=phone):
-        return jsonify({json_success: False, 'msg': msg_has_been_register}), 403
-    return jsonify({json_success: True, 'msg': msg_register_success})
+        return jsonify(dic_register_has_been_register), 403
+    return jsonify(dic_register_isok_register)
 
 
 @app.route('/app/login', methods=['Post'])
@@ -56,17 +56,17 @@ def login():
     phone = request.json.get('phone')
     password = request.json.get('password')
     if not phone or not password or len(password) < 6 or not validate_phone(phone):
-        return jsonify({json_success: False, 'msg': 0}), HTTP_Forbidden
+        return jsonify(dic_comm_format_error), HTTP_Forbidden
     u = User.objects(phone=phone).first()
     if not u:
-        return jsonify({json_success: False, json_msg: msg_login_NotFound}), HTTP_Forbidden
+        return jsonify(dic_login_notfound), HTTP_Forbidden
     if not u.verify_password(password):
-        return jsonify({json_success: False, json_msg: msg_login_pw_error}), HTTP_Forbidden
+        return jsonify(dic_login_pw_erro), HTTP_Forbidden
     token = hashlib.sha1(os.urandom(24)).hexdigest()
     first_login = False if u.token else True
     u.token = token
     u.save()
-    return jsonify({json_success: True, json_msg: msg_login_success, 'first_time': first_login, 'token': token})
+    return jsonify(dic_login_success.update({'first_time':first_login}))
 
 
 @app.route('/app/user/avatar', methods=['Post'])
@@ -74,13 +74,13 @@ def login():
 def upload_avatar(user):
     data = request.json.get('data')
     if not data:
-        return jsonify({json_success: False, json_msg: msg_file_nodata})
+        return jsonify(dic_comm_format_error)
     print(data)
     file = base64.b64decode(data)
     file_like = io.BytesIO(file)
     user.photo.replace(file_like)
     user.save()
-    return jsonify({json_success: True})
+    return jsonify(dic_avatar_ok)
 
 
 @app.route('/app/user/get_avatar', methods=['Post'])
