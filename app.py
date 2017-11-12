@@ -89,8 +89,8 @@ def get_avatar(user):
     photo = user.photo.read()
     if photo:
         data = base64.b64encode(photo)
-        return jsonify({json_success: True, 'data': str(data)}), 200
-    return jsonify({json_success: False, 'msg': msg_file_notfound}), 404
+        return jsonify(dic_avatar_ok.update({'data': str(data)}) ), HTTP_OK
+    return jsonify(dic_comm_not_found), HTTP_NotFound
 
 
 @app.route('/app/user/upload', methods=['Post'])
@@ -107,9 +107,9 @@ def upload(user):
             user_file.file = file_field
             file_field.sum_point += 1
             user_file.save()
-            return jsonify({json_success: True, json_msg: msg_file_upload_ok, 'fid': user_file.id})
+            return jsonify(dic_upload_create_ok.update({'fid': user_file.id}))
         else:
-            return jsonify({json_success: False, json_msg: msg_file_notfound})
+            return jsonify(dic_comm_not_found)
     if name and data and type:
         user_file = UserFile(name=name, date=datetime.now())
         file = base64.b64decode(data)
@@ -122,7 +122,7 @@ def upload(user):
             file_field.save()
             user_file.file = file_field
             user_file.save()
-            return jsonify({json_success: True, json_msg: msg_file_upload_ok, 'fid': user_file.id})
+            return jsonify(dic_upload_create_ok.update({'fid': user_file.id}))
         else:
             file_field = File(upload_user=user, md5=md5, upload_date=datetime.now(), type=type)
             file_like = io.BytesIO(file)
@@ -130,9 +130,9 @@ def upload(user):
             file_field.save()
             user_file.file = file_field
             user_file.save()
-            return jsonify({json_success: True, json_msg: msg_file_upload_ok, 'fid': user_file.id})
+            return jsonify(dic_upload_ok.update({'fid': user_file.id}))
     else:
-        return jsonify({json_success: False, json_msg: msg_format_error})
+        return jsonify(dic_comm_format_error)
 
 
 @app.route('/app/user/getfile', methods=['Post'])
@@ -144,11 +144,11 @@ def getfile(user):
         file = file.file.file.read()
         if file:
             data = base64.b64encode(file)
-            return jsonify({json_success: True, 'data': str(data)}), 200
+            return jsonify(dic_file_get_ok.update({'data': str(data)})), 200
         else:
-            return jsonify({json_success: False, 'msg': msg_file_nodata}), HTTP_Forbidden
+            return jsonify(dic_comm_not_found), HTTP_NotFound
     else:
-        return jsonify({json_success: False, 'msg': msg_file_notfound}), 404
+        return jsonify(dic_comm_not_found), HTTP_NotFound
 
 
 @app.route('/app/user/modify', methods=['POST'])
@@ -158,7 +158,7 @@ def user_modify(user):
     birth = request.json.get('birth')
     password = request.json.get('password')
     if not password and not name and not birth:
-        return jsonify({json_success: True, 'msg': 'no change'})
+        return jsonify(dic_modify_none)
     user.name = name if name else user.name
     user.birth = birth if birth else user.birth
     user.hash_password(password)
@@ -166,18 +166,18 @@ def user_modify(user):
         user.save()
     except ValidationError as e:
         print(e)
-        return jsonify({json_success: False, 'msg': msg_format_error}), 403
+        return jsonify(dic_comm_format_error), 403
     except BaseException as e:
         print(e)
-        return jsonify({json_success: False, 'msg': msg_server_error}), 500
-    return jsonify({json_success: True, json_msg: msg_modify_success})
+        return jsonify(dic_comm_server_error), HTTP_Server_Error
+    return jsonify(dic_modify_ok),HTTP_OK
 
 
 @app.route('/app/user/info', methods=['POST'])
 @auth_token
 def user_info(user):
     return jsonify(
-        {json_success: True, 'name': user.name, 'phone': user.phone, 'email': user.email, 'birth': user.birth})
+        {'done': True, 'name': user.name, 'phone': user.phone, 'email': user.email, 'birth': user.birth})
 
 
 if __name__ == '__main__':

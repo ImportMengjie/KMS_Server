@@ -26,6 +26,7 @@ HTTP_Server_Error = 500  # 服务器内部错误，无法完成请求
 def _getdic(msg,code,done):
     return {'code':code,'msg':msg,'done':done}
 # comm
+dic_comm_ok = _getdic("完成",0,True)
 dic_comm_format_error=_getdic("格式错误",1,False)
 dic_comm_not_found = _getdic('没找到该资源',2,False)
 dic_comm_token_expired = _getdic('token过期',3,False)

@@ -32,6 +32,7 @@
 
 code | msg | HTTP
 ---|---|---
+0 | 成功 | HTTP_OK
 1 | 格式错误 | HTTP_Bad_Request
 2 | 没找到该资源 | HTTP_NotFound
 3 | token过期 | HTTP_Unauthorized
@@ -273,7 +274,7 @@ code | msg | HTTP
         'userid':(string) # 如果没有此项则获取自己的信息
     }
     return:
-    code(2)
+    code(2,0)
     {
         'name':(string),
         'phone',(string),

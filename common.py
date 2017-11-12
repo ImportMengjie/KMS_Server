@@ -9,9 +9,9 @@ def auth_token(func):
     def wrapper(*args, **kwargs):
         token = request.json.get('token')
         if not token:
-            return jsonify({json_success: False, json_msg: msg_auth_need}), HTTP_Forbidden
+            return jsonify(dic_comm_token_no_have), HTTP_Unauthorized
         u = User.objects(token=token).first()
         if not u:
-            return jsonify({json_success: False, json_msg: msg_auth_require}), HTTP_Forbidden
+            return jsonify(dic_comm_token_expired), HTTP_Unauthorized
         return func(user=u, *args, **kwargs)
     return wrapper
