@@ -31,23 +31,23 @@ def register():
         u.save()
     except NotUniqueError as e:
         print(e)
-        return jsonify(dic_register_has_been_register), 403
+        return jsonify(dic_register_has_been_register), HTTP_Forbidden
     except ValidationError as e:
         print(e)
-        return jsonify(dic_comm_format_error), 403
+        return jsonify(dic_comm_format_error), HTTP_Forbidden
     except BaseException as e:
         print(e)
-        return jsonify(dic_comm_server_error), 500
-    return jsonify(dic_register_success), 201
+        return jsonify(dic_comm_server_error), HTTP_Server_Error
+    return jsonify(dic_register_success), HTTP_OK
 
 
 @app.route('/app/register/testphone', methods=['Post'])
 def test_phone():
     phone = request.json.get('phone')
     if not validate_phone(phone):
-        return jsonify(dic_comm_format_error), 403
+        return jsonify(dic_comm_format_error), HTTP_Forbidden
     if User.objects(phone=phone):
-        return jsonify(dic_register_has_been_register), 403
+        return jsonify(dic_register_has_been_register), HTTP_Forbidden
     return jsonify(dic_register_isok_register)
 
 
@@ -66,7 +66,7 @@ def login():
     first_login = False if u.token else True
     u.token = token
     u.save()
-    return jsonify(dic_login_success.update({'first_time':first_login}))
+    return jsonify(dic_login_success.update({'first_time':first_login})),HTTP_OK
 
 
 @app.route('/app/user/avatar', methods=['Post'])
@@ -74,13 +74,13 @@ def login():
 def upload_avatar(user):
     data = request.json.get('data')
     if not data:
-        return jsonify(dic_comm_format_error)
+        return jsonify(dic_comm_format_error),HTTP_Forbidden
     print(data)
     file = base64.b64decode(data)
     file_like = io.BytesIO(file)
     user.photo.replace(file_like)
     user.save()
-    return jsonify(dic_avatar_ok)
+    return jsonify(dic_avatar_ok),HTTP_OK
 
 
 @app.route('/app/user/get_avatar', methods=['Post'])
@@ -107,9 +107,9 @@ def upload(user):
             user_file.file = file_field
             file_field.sum_point += 1
             user_file.save()
-            return jsonify(dic_upload_create_ok.update({'fid': user_file.id}))
+            return jsonify(dic_upload_create_ok.update({'fid': user_file.id})),HTTP_OK
         else:
-            return jsonify(dic_comm_not_found)
+            return jsonify(dic_comm_not_found),HTTP_NotFound
     if name and data and type:
         user_file = UserFile(name=name, date=datetime.now())
         file = base64.b64decode(data)
@@ -122,7 +122,7 @@ def upload(user):
             file_field.save()
             user_file.file = file_field
             user_file.save()
-            return jsonify(dic_upload_create_ok.update({'fid': user_file.id}))
+            return jsonify(dic_upload_create_ok.update({'fid': user_file.id})),HTTP_OK
         else:
             file_field = File(upload_user=user, md5=md5, upload_date=datetime.now(), type=type)
             file_like = io.BytesIO(file)
@@ -130,9 +130,9 @@ def upload(user):
             file_field.save()
             user_file.file = file_field
             user_file.save()
-            return jsonify(dic_upload_ok.update({'fid': user_file.id}))
+            return jsonify(dic_upload_ok.update({'fid': user_file.id})),HTTP_OK
     else:
-        return jsonify(dic_comm_format_error)
+        return jsonify(dic_comm_format_error),HTTP_Forbidden
 
 
 @app.route('/app/user/getfile', methods=['Post'])
@@ -144,7 +144,7 @@ def getfile(user):
         file = file.file.file.read()
         if file:
             data = base64.b64encode(file)
-            return jsonify(dic_file_get_ok.update({'data': str(data)})), 200
+            return jsonify(dic_file_get_ok.update({'data': str(data)})), HTTP_OK
         else:
             return jsonify(dic_comm_not_found), HTTP_NotFound
     else:
@@ -158,7 +158,7 @@ def user_modify(user):
     birth = request.json.get('birth')
     password = request.json.get('password')
     if not password and not name and not birth:
-        return jsonify(dic_modify_none)
+        return jsonify(dic_modify_none),HTTP_Forbidden
     user.name = name if name else user.name
     user.birth = birth if birth else user.birth
     user.hash_password(password)
@@ -166,7 +166,7 @@ def user_modify(user):
         user.save()
     except ValidationError as e:
         print(e)
-        return jsonify(dic_comm_format_error), 403
+        return jsonify(dic_comm_format_error), HTTP_Forbidden
     except BaseException as e:
         print(e)
         return jsonify(dic_comm_server_error), HTTP_Server_Error
@@ -176,8 +176,7 @@ def user_modify(user):
 @app.route('/app/user/info', methods=['POST'])
 @auth_token
 def user_info(user):
-    return jsonify(
-        {'done': True, 'name': user.name, 'phone': user.phone, 'email': user.email, 'birth': user.birth})
+    return jsonify(dic_comm_ok.update({'name': user.name, 'phone': user.phone, 'email': user.email, 'birth': user.birth})),HTTP_OK
 
 
 if __name__ == '__main__':
