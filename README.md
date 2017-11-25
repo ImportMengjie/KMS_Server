@@ -396,7 +396,7 @@ code | msg | HTTP
         'owndatelist':[(long),,,],
         'ownclassfiylist':[(string),,,],
         'ownsummarylist':[(string),,,],
-        'publiclist':[(bool),,,],
+        'ownpublic':[(bool),,,],
         
         # 他人的文件列表
         'total':(long),

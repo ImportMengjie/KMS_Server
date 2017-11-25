@@ -326,7 +326,7 @@ def favorite(user):
                                      classify=user_file.classify,isfavorite=True)
             new_user_file.file.sum_point += 1
             new_user_file.save()
-            return jsonify(dic_favorite_ok),HTTP_OK
+            return jsonify(get_dict(dic_favorite_ok,{'fid':str(new_user_file.id)})),HTTP_OK
     elif fid and cancel:
         user_file=UserFile.objects(id=fid,user=user,isfavorite=True)
         if not user_file.first():
@@ -343,6 +343,17 @@ def favorite(user):
                 return jsonify(dic_favorite_cancel),HTTP_OK
     else:
         return jsonify(dic_comm_format_error),HTTP_Forbidden
+
+
+@app.route('/app/user/search',methods=['Post'])
+@auth_token
+def search(user):
+    keyword = request.json.get('keyword')
+    own = search_own(user,keyword=keyword)
+    other=search(user,keyword)
+    own.update(other)
+    own.update(dic_search_ok)
+    return jsonify(own),HTTP_OK
 
 
 # @app.route('/app/user/favorite', methods=['Post'])

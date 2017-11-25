@@ -42,7 +42,7 @@ def getownfilelist():
 
 
 def favorite():
-    payload = {'token': token, 'fid': '5a193d76dee1711be795c34b', 'cancel': True}
+    payload = {'token': token, 'fid': '5a19427ddee1711ff16b8588','cancel':True}
     req = requests.post(url + 'app/user/favorite', json=payload)
     print(req.json())
 

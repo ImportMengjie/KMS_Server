@@ -38,3 +38,25 @@ def handle_summary(data):
 
 def handle_classify(data,summary=None,text=None):
     return Classify.objects().first()
+
+def search_own(user,keyword):
+    res = UserFile.objects(user=user).search_text(keyword)
+    owntotal = len(res)
+    ownfidlist = []
+    ownnamelist = []
+    owndatelist = []
+    ownclassifylist = []
+    ownsummarylist = []
+    ownpublic = []
+    for i in res:
+        ownfidlist.append(i.id)
+        ownnamelist.append(i.name)
+        owndatelist.append(i.date)
+        ownclassifylist.append(i.user_classify)
+        ownsummarylist.append(i.file.summary)
+        ownpublic.append(i.public)
+
+def search(user,keyword):
+    pass
+
+
