@@ -17,7 +17,7 @@ class User(db.Document):
     birth = db.DateTimeField()
     photo = db.ImageField(thumbnail_size=(60, 60, True))
     token = db.StringField()
-
+    #list_favorite = db.ListField(db.ReferenceField(UserFile))
     def hash_password(self, password):
         if password:
             self.password = pwd_context.encrypt(password)

@@ -355,7 +355,7 @@ code | msg | HTTP
     
     # 获取用户收藏列表
     route:
-        '/app/user/favorite',methods=['Get']
+        '/app/user/favorite',methods=['Post']
     required:
     {
     

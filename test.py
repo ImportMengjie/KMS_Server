@@ -19,10 +19,28 @@ def uploadfile():
         print(req.text)
 
 def getfile():
-    id = '5a18fc8fdee17110b5bf510a'
+    id = '5a19038fdee17116885cacc2'
     payload={'token':token,'fid':id}
     req = requests.get(url + 'app/user/getfile', json=payload)
     print(req.text)
 
+def modifyfile():
+    id = '5a19038fdee17116885cacc2'
+    payload={'token':token,'fid':id,'name':'我是sb','delete':True}
+    req = requests.post(url + 'app/user/modifyfile', json=payload)
+    print(req.json())
+
+def getownfilelist():
+    payload = {'token': token}
+    req = requests.get(url + 'app/user/getownfilelist', json=payload)
+    print(req.json())
+
+def favorite():
+    payload = {'token': token}
+    req = requests.get(url + 'app/user/getownfilelist', json=payload)
+    print(req.json())
+
 #uploadfile()
-getfile()
+#getfile()
+#modifyfile()
+#getownfilelist()

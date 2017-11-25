@@ -144,11 +144,11 @@ def upload(user):
             file_field = File(upload_user=user, md5=md5, upload_date=datetime.now())
             try:
                 text = handle_file(file)
-                summarry = handle_summary(file)
-                classify = handle_classify(file, summarry, text)
+                summary = handle_summary(file)
+                classify = handle_classify(file, summary, text)
             except TypeError as e:
                 return jsonify(dic_comm_format_error), HTTP_Bad_Request
-            file_field.summary = summarry
+            file_field.summary = summary
             file_field.text = text
             file_like = io.BytesIO(file)
             file_field.file.put(file_like)
@@ -175,8 +175,8 @@ def getfile(user):
         if file:
             data = base64.b64encode(file)
             return jsonify(get_dict(dic_file_get_ok, {'data': str(data), 'date': user_file.date,
-                                                      'classify':user_file.user_classify,
-                                                      'summary':user_file.file.summary})), HTTP_OK
+                                                      'classify': user_file.user_classify,
+                                                      'summary': user_file.file.summary})), HTTP_OK
         else:
             return jsonify(dic_comm_not_found), HTTP_NotFound
     else:
@@ -187,17 +187,35 @@ def getfile(user):
 @auth_token
 def modifyfile(user):
     fid = request.json.get('fid')
-    public=request.json.get('public')
-    name=request.json.get('name')
-    classify=request.json.get('classify')
-    delete=request.json.get('delete')
+    public = request.json.get('public')
+    name = request.json.get('name')
+    classify = request.json.get('classify')
+    delete = request.json.get('delete')
     if fid:
+        user_file = UserFile.objects(id=fid).first()
+        if not user_file:
+            return jsonify(dic_comm_not_found),HTTP_NotFound
         if delete:
-            pass
+            user_file.file.sum_point -= 1
+            if user_file.file.sum_point==0:
+                user_file.file.delete()
+                user_file.delete()
+            else:
+                user_file.file.save()
+                user_file.delete()
+            return jsonify(dic_file_dele_ok),HTTP_OK
         if public or name or classify:
-            pass
+            user_file.name=name if name else user_file.name
+            user_file.public=public if public is not None else user_file.public
+            user_file.user_classify=classify if classify else user_file.user_classify
+            user_file.save()
+            return jsonify(dic_file_modify_ok),HTTP_OK
+        else:
+            return jsonify(dic_file_modify_none),HTTP_OK
+
     else:
-        return jsonify(dic_comm_format_error),HTTP_Forbidden
+        return jsonify(dic_comm_format_error), HTTP_Forbidden
+
 
 @app.route('/app/user/modify', methods=['POST'])
 @auth_token
@@ -224,18 +242,86 @@ def user_modify(user):
 @app.route('/app/user/info', methods=['POST'])
 @auth_token
 def user_info(user):
-
-    return jsonify(
-        get_dict(dic_comm_ok, {'name': user.name, 'phone': user.phone,
-                               'email': user.email, 'birth': user.birth})), HTTP_OK
-
-
+    userid = request.json.get('userid')
+    if not userid:
+        return jsonify(
+            get_dict(dic_comm_ok, {'name': user.name, 'phone': user.phone,
+                                   'email': user.email, 'birth': user.birth})), HTTP_OK
+    else:
+        user = User(id=userid).first()
+        if user:
+            return jsonify(
+                get_dict(dic_comm_ok, {'name': user.name, 'phone': user.phone,
+                                       'email': user.email, 'birth': user.birth})), HTTP_OK
+        else:
+            return jsonify(dic_comm_not_found),HTTP_NotFound
 
 
 @app.route('/app/user/getownfilelist', methods=['Get'])
 @auth_token
 def get_ownfilelist(user):
     res = UserFile.objects(user=user)
+    total=len(res)
+    fidlist=[]
+    namelist=[]
+    datelist=[]
+    classifylist=[]
+    summarylist=[]
+    public=[]
+    for i in res:
+        fidlist.append(i.id)
+        namelist.append(i.name)
+        datelist.append(i.date)
+        classifylist.append(i.user_classify)
+        summarylist.append(i.file.summary)
+        public.append(i.public)
+    return jsonify(get_dict(dic_comm_ok,{
+        'total':total,'fidlist':str(fidlist),
+        'namelist':namelist,'datelist':datelist,
+        'classifylist':classifylist,'summarylist':summarylist,'public':public}))
+
+@app.route('/app/user/getfilelist',methods=['Get']) #获取推荐列表
+@auth_token
+def getfilelist(user):
+    pass
+
+@app.route('/app/user/favorite',methods=['Post'])
+@auth_token
+def favorite(user):
+    fid = request.json.get('fid')
+    cancel = request.json.get('cancel')
+    if not fid and not cancel:
+        total = len(user.list_favorite)
+        fidlist = []
+        namelist = []
+        datelist = []
+        classifylist = []
+        summarylist = []
+        public = []
+        for i in user.list_favorite:
+            fidlist.append(i.id)
+            namelist.append(i.name)
+            datelist.append(i.date)
+            classifylist.append(i.user_classify)
+            summarylist.append(i.file.summary)
+            public.append(i.public)
+        return jsonify(get_dict(dic_comm_ok, {
+            'total': total, 'fidlist': str(fidlist),
+            'namelist': namelist, 'datelist': datelist,
+            'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
+    if fid and not cancel:
+        if user.list_favorite.objects(id=fid) is not None or UserFile.objects(user=user,id=fid) is not None:
+            return jsonify(dic_favorite_has_been),HTTP_Forbidden
+        else:
+            user.list_favorite.append(UserFile.objects(id=fid).first())
+            return jsonify(dic_favorite_ok),HTTP_OK
+    elif fid and cancel:
+        user_file = user.list_favorite.objects(id=fid).first()
+        if user_file:
+            user.list_favorite.remove(user_file)
+            return jsonify(dic_favorite_cancel),HTTP_OK
+        else:
+            return jsonify(dic_favorite_it_not_your),HTTP_NotFound
 
 
 if __name__ == '__main__':
