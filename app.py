@@ -30,6 +30,7 @@ def register():
     u.name = request.json.get('name')
     u.set_email(request.json.get('email'))
     u.hash_password(request.json.get('password'))
+    u.list_favorite = ""
     if len(request.json.get('password')) < 6:
         return jsonify(dic_comm_format_error)
     try:
@@ -194,24 +195,24 @@ def modifyfile(user):
     if fid:
         user_file = UserFile.objects(id=fid).first()
         if not user_file:
-            return jsonify(dic_comm_not_found),HTTP_NotFound
+            return jsonify(dic_comm_not_found), HTTP_NotFound
         if delete:
             user_file.file.sum_point -= 1
-            if user_file.file.sum_point==0:
+            if user_file.file.sum_point == 0:
                 user_file.file.delete()
                 user_file.delete()
             else:
                 user_file.file.save()
                 user_file.delete()
-            return jsonify(dic_file_dele_ok),HTTP_OK
+            return jsonify(dic_file_dele_ok), HTTP_OK
         if public or name or classify:
-            user_file.name=name if name else user_file.name
-            user_file.public=public if public is not None else user_file.public
-            user_file.user_classify=classify if classify else user_file.user_classify
+            user_file.name = name if name else user_file.name
+            user_file.public = public if public is not None else user_file.public
+            user_file.user_classify = classify if classify else user_file.user_classify
             user_file.save()
-            return jsonify(dic_file_modify_ok),HTTP_OK
+            return jsonify(dic_file_modify_ok), HTTP_OK
         else:
-            return jsonify(dic_file_modify_none),HTTP_OK
+            return jsonify(dic_file_modify_none), HTTP_OK
 
     else:
         return jsonify(dic_comm_format_error), HTTP_Forbidden
@@ -254,20 +255,20 @@ def user_info(user):
                 get_dict(dic_comm_ok, {'name': user.name, 'phone': user.phone,
                                        'email': user.email, 'birth': user.birth})), HTTP_OK
         else:
-            return jsonify(dic_comm_not_found),HTTP_NotFound
+            return jsonify(dic_comm_not_found), HTTP_NotFound
 
 
 @app.route('/app/user/getownfilelist', methods=['Get'])
 @auth_token
 def get_ownfilelist(user):
     res = UserFile.objects(user=user)
-    total=len(res)
-    fidlist=[]
-    namelist=[]
-    datelist=[]
-    classifylist=[]
-    summarylist=[]
-    public=[]
+    total = len(res)
+    fidlist = []
+    namelist = []
+    datelist = []
+    classifylist = []
+    summarylist = []
+    public = []
     for i in res:
         fidlist.append(i.id)
         namelist.append(i.name)
@@ -275,17 +276,19 @@ def get_ownfilelist(user):
         classifylist.append(i.user_classify)
         summarylist.append(i.file.summary)
         public.append(i.public)
-    return jsonify(get_dict(dic_comm_ok,{
-        'total':total,'fidlist':str(fidlist),
-        'namelist':namelist,'datelist':datelist,
-        'classifylist':classifylist,'summarylist':summarylist,'public':public}))
+    return jsonify(get_dict(dic_comm_ok, {
+        'total': total, 'fidlist': str(fidlist),
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
 
-@app.route('/app/user/getfilelist',methods=['Get']) #获取推荐列表
+
+@app.route('/app/user/getfilelist', methods=['Get'])  # 获取推荐列表
 @auth_token
 def getfilelist(user):
     pass
 
-@app.route('/app/user/favorite',methods=['Post'])
+
+@app.route('/app/user/favorite', methods=['Post'])
 @auth_token
 def favorite(user):
     fid = request.json.get('fid')
@@ -298,7 +301,10 @@ def favorite(user):
         classifylist = []
         summarylist = []
         public = []
-        for i in user.list_favorite:
+        for s in user.list_favorite.split(','):
+            if s=="":
+                continue
+            i = UserFile.objects(id=s).first()
             fidlist.append(i.id)
             namelist.append(i.name)
             datelist.append(i.date)
@@ -310,18 +316,22 @@ def favorite(user):
             'namelist': namelist, 'datelist': datelist,
             'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
     if fid and not cancel:
-        if user.list_favorite.objects(id=fid) is not None or UserFile.objects(user=user,id=fid) is not None:
-            return jsonify(dic_favorite_has_been),HTTP_Forbidden
+        user_file = UserFile.objects(id=fid).first()
+        if user.list_favorite.find(fid) >= 0 or user_file.user == user:
+            return jsonify(dic_favorite_has_been), HTTP_Forbidden
         else:
-            user.list_favorite.append(UserFile.objects(id=fid).first())
-            return jsonify(dic_favorite_ok),HTTP_OK
+            user.list_favorite += ',' + fid
+            user.save()
+            return jsonify(dic_favorite_ok), HTTP_OK
     elif fid and cancel:
-        user_file = user.list_favorite.objects(id=fid).first()
-        if user_file:
-            user.list_favorite.remove(user_file)
-            return jsonify(dic_favorite_cancel),HTTP_OK
+        index = user.list_favorite.find(fid)
+        if index < 0:
+            return jsonify(dic_favorite_it_not_your), HTTP_NotFound
         else:
-            return jsonify(dic_favorite_it_not_your),HTTP_NotFound
+            user.list_favorite = user.list_favorite.replace(','+fid, "")
+            user.save()
+            return jsonify(dic_favorite_cancel),HTTP_OK
+
 
 
 if __name__ == '__main__':
