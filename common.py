@@ -55,8 +55,34 @@ def search_own(user,keyword):
         ownclassifylist.append(i.user_classify)
         ownsummarylist.append(i.file.summary)
         ownpublic.append(i.public)
+    return jsonify(get_dict(dic_comm_ok, {
+        'owntotal': owntotal, 'ownfidlist': str(ownfidlist),
+        'ownnamelist': ownnamelist, 'owndatelist': owndatelist,
+        'ownclassifylist': ownclassifylist, 'ownsummarylist': ownsummarylist, 'ownpublic': ownpublic}))
+
 
 def search(user,keyword):
-    pass
+    res = UserFile.objects(user__ne=user,public=True).search_text(keyword)
+    total = len(res)
+    fidlist = []
+    namelist = []
+    datelist = []
+    classifylist = []
+    summarylist = []
+    userid = []
+    username=[]
+    for i in res:
+        fidlist.append(str(i.id))
+        namelist.append(i.name)
+        datelist.append(i.date)
+        classifylist.append(i.user_classify)
+        summarylist.append(i.file.summary)
+        userid.append(str(i.user.id))
+        username.append(i.user.name)
+    return jsonify(get_dict(dic_comm_ok, {
+        'total': total, 'fidlist': str(fidlist),
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'userid': userid,
+        'username':username}))
 
 

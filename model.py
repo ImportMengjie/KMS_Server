@@ -17,6 +17,7 @@ class User(db.Document):
     birth = db.DateTimeField()
     photo = db.ImageField(thumbnail_size=(60, 60, True))
     token = db.StringField()
+
     def hash_password(self, password):
         if password:
             self.password = pwd_context.encrypt(password)
@@ -56,19 +57,18 @@ class UserFile(db.Document):
     user = db.ReferenceField(User)
     public = db.BooleanField()
     pre = db.LongField()
-    isfavorite=db.BooleanField(default=False)
-
+    isfavorite = db.BooleanField(default=False)
 
     meta = {'indexes': [
-        {'fields': ['$name', "$file.text"],
+        {'fields': ['$name'],
          'default_language': 'chinese',
-         'weights': {'title': 10, 'file.text': 2}
+         'weights': {'title': 10}
          }
     ]}
 
 
 # User.list_own = db.ListField(db.ReferenceField(UserFile))
-#User.list_favorite = db.ListField(db.ReferenceField(UserFile))
+# User.list_favorite = db.ListField(db.ReferenceField(UserFile))
 
 
 def validate_phone(phone: str):
