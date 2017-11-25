@@ -340,6 +340,9 @@ code | msg | HTTP
         'fid':(string)
     }
     return:
+    {
+        'fid':(string) #新收藏的fid
+    }
     code(160,161)
     
     # 取消收藏

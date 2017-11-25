@@ -57,7 +57,7 @@ class UserFile(db.Document):
     user = db.ReferenceField(User)
     public = db.BooleanField()
     pre = db.LongField()
-    isfavorite=db.BooleanField()
+    isfavorite=db.BooleanField(default=False)
 
 
 # User.list_own = db.ListField(db.ReferenceField(UserFile))

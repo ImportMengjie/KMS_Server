@@ -261,7 +261,7 @@ def user_info(user):
 @app.route('/app/user/getownfilelist', methods=['Get'])
 @auth_token
 def get_ownfilelist(user):
-    res = UserFile.objects(user=user)
+    res = UserFile.objects(user=user, isfavorite=False)
     total = len(res)
     fidlist = []
     namelist = []
@@ -294,17 +294,15 @@ def favorite(user):
     fid = request.json.get('fid')
     cancel = request.json.get('cancel')
     if not fid and not cancel:
-        total = len(user.list_favorite)
+        res = UserFile.objects(user=user, isfavorite=True)
+        total = len(res)
         fidlist = []
         namelist = []
         datelist = []
         classifylist = []
         summarylist = []
         public = []
-        for s in user.list_favorite.split(','):
-            if s=="":
-                continue
-            i = UserFile.objects(id=s).first()
+        for i in res:
             fidlist.append(i.id)
             namelist.append(i.name)
             datelist.append(i.date)
@@ -315,22 +313,81 @@ def favorite(user):
             'total': total, 'fidlist': str(fidlist),
             'namelist': namelist, 'datelist': datelist,
             'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
-    if fid and not cancel:
+    elif fid and not cancel:
         user_file = UserFile.objects(id=fid).first()
-        if user.list_favorite.find(fid) >= 0 or user_file.user == user:
+        if not user_file:
+            return jsonify(dic_comm_not_found), HTTP_NotFound
+        elif user_file.user == user:
             return jsonify(dic_favorite_has_been), HTTP_Forbidden
         else:
-            user.list_favorite += ',' + fid
-            user.save()
-            return jsonify(dic_favorite_ok), HTTP_OK
+            new_user_file = UserFile(name=user_file.name, date=user_file.date,
+                                     file=user_file.file, user_classify=user_file.classify.name,
+                                     user=user, public=True,
+                                     classify=user_file.classify,isfavorite=True)
+            new_user_file.file.sum_point += 1
+            new_user_file.save()
+            return jsonify(dic_favorite_ok),HTTP_OK
     elif fid and cancel:
-        index = user.list_favorite.find(fid)
-        if index < 0:
-            return jsonify(dic_favorite_it_not_your), HTTP_NotFound
+        user_file=UserFile.objects(id=fid,user=user,isfavorite=True)
+        if not user_file.first():
+            return jsonify(dic_favorite_it_not_your),HTTP_Forbidden
         else:
-            user.list_favorite = user.list_favorite.replace(','+fid, "")
-            user.save()
-            return jsonify(dic_favorite_cancel),HTTP_OK
+            user_file = user_file.first()
+            user_file.file.sum_point -= 1
+            if user_file.file.sum_point == 0:
+                user_file.file.delete()
+                user_file.delete()
+            else:
+                user_file.file.save()
+                user_file.delete()
+                return jsonify(dic_favorite_cancel),HTTP_OK
+    else:
+        return jsonify(dic_comm_format_error),HTTP_Forbidden
+
+
+# @app.route('/app/user/favorite', methods=['Post'])
+# @auth_token
+# def favorite(user):
+#     fid = request.json.get('fid')
+#     cancel = request.json.get('cancel')
+#     if not fid and not cancel:
+#         total = len(user.list_favorite)
+#         fidlist = []
+#         namelist = []
+#         datelist = []
+#         classifylist = []
+#         summarylist = []
+#         public = []
+#         for s in user.list_favorite.split(','):
+#             if s=="":
+#                 continue
+#             i = UserFile.objects(id=s).first()
+#             fidlist.append(i.id)
+#             namelist.append(i.name)
+#             datelist.append(i.date)
+#             classifylist.append(i.user_classify)
+#             summarylist.append(i.file.summary)
+#             public.append(i.public)
+#         return jsonify(get_dict(dic_comm_ok, {
+#             'total': total, 'fidlist': str(fidlist),
+#             'namelist': namelist, 'datelist': datelist,
+#             'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
+#     if fid and not cancel:
+#         user_file = UserFile.objects(id=fid).first()
+#         if user.list_favorite.find(fid) >= 0 or user_file.user == user:
+#             return jsonify(dic_favorite_has_been), HTTP_Forbidden
+#         else:
+#             user.list_favorite += ',' + fid
+#             user.save()
+#             return jsonify(dic_favorite_ok), HTTP_OK
+#     elif fid and cancel:
+#         index = user.list_favorite.find(fid)
+#         if index < 0:
+#             return jsonify(dic_favorite_it_not_your), HTTP_NotFound
+#         else:
+#             user.list_favorite = user.list_favorite.replace(','+fid, "")
+#             user.save()
+#             return jsonify(dic_favorite_cancel),HTTP_OK
 
 
 
