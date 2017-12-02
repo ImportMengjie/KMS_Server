@@ -42,7 +42,7 @@ class File(db.Document):
     upload_user = db.ReferenceField(User)
     md5 = db.StringField(required=True)
     sum_point = db.LongField(default=1)
-    upload_date = db.DateTimeField()
+    upload_date = db.DateTimeField(required=True)
     file = db.FileField()
     summary = db.StringField()
     text = db.StringField()
@@ -58,17 +58,16 @@ class UserFile(db.Document):
     public = db.BooleanField()
     pre = db.LongField()
     isfavorite = db.BooleanField(default=False)
-
+    text = db.StringField()
     meta = {'indexes': [
-        {'fields': ['$name'],
-         'default_language': 'chinese',
-         'weights': {'title': 10}
+        {'fields': ['$name','$text'],
+         #'language': 'simplified chinese',
+         'weights': {'name': 10,'text':5}
          }
     ]}
 
 
-# User.list_own = db.ListField(db.ReferenceField(UserFile))
-# User.list_favorite = db.ListField(db.ReferenceField(UserFile))
+
 
 
 def validate_phone(phone: str):

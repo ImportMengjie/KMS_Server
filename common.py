@@ -29,9 +29,9 @@ def handle_file(data):
         f.write(data)
     kind = filetype.guess(data)
     if kind == None:
-        raise TypeError
+        return '不知道,我不知道你是是不是煞笔是撒比'
     print(kind.extension)
-    return kind.MIME
+    return kind.MIME+'sbsb我是是是ssbb'
 
 def handle_summary(data):
     return 'It is summary'
@@ -49,19 +49,19 @@ def search_own(user,keyword):
     ownsummarylist = []
     ownpublic = []
     for i in res:
-        ownfidlist.append(i.id)
+        ownfidlist.append(str(i.id))
         ownnamelist.append(i.name)
         owndatelist.append(i.date)
         ownclassifylist.append(i.user_classify)
         ownsummarylist.append(i.file.summary)
         ownpublic.append(i.public)
-    return jsonify(get_dict(dic_comm_ok, {
-        'owntotal': owntotal, 'ownfidlist': str(ownfidlist),
+    return get_dict(dic_comm_ok, {
+        'owntotal': owntotal, 'ownfidlist': ownfidlist,
         'ownnamelist': ownnamelist, 'owndatelist': owndatelist,
-        'ownclassifylist': ownclassifylist, 'ownsummarylist': ownsummarylist, 'ownpublic': ownpublic}))
+        'ownclassifylist': ownclassifylist, 'ownsummarylist': ownsummarylist, 'ownpublic': ownpublic})
 
 
-def search(user,keyword):
+def search_other(user,keyword):
     res = UserFile.objects(user__ne=user,public=True).search_text(keyword)
     total = len(res)
     fidlist = []
@@ -72,17 +72,17 @@ def search(user,keyword):
     userid = []
     username=[]
     for i in res:
-        fidlist.append(str(i.id))
+        fidlist.append(i.id)
         namelist.append(i.name)
         datelist.append(i.date)
         classifylist.append(i.user_classify)
         summarylist.append(i.file.summary)
         userid.append(str(i.user.id))
         username.append(i.user.name)
-    return jsonify(get_dict(dic_comm_ok, {
-        'total': total, 'fidlist': str(fidlist),
+    return get_dict(dic_comm_ok, {
+        'total': total, 'fidlist': fidlist,
         'namelist': namelist, 'datelist': datelist,
         'classifylist': classifylist, 'summarylist': summarylist, 'userid': userid,
-        'username':username}))
+        'username':username})
 
 

@@ -18,9 +18,31 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/app/see', methods=['Get'])
+@app.route('/app/see', methods=['Post'])
 def see_hot():
-    pass
+    res = UserFile.objects(public=True)
+    total = len(res)
+    fidlist = []
+    namelist = []
+    datelist = []
+    classifylist = []
+    summarylist = []
+    public = []
+    for i in res:
+        fidlist.append(str(i.id))
+        namelist.append(i.name)
+        datelist.append(str(i.date))
+        classifylist.append(i.user_classify)
+        summarylist.append(i.file.summary)
+        public.append(i.public)
+    print({
+        'total': total, 'fidlist': fidlist,
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'public': public})
+    return jsonify(get_dict(dic_comm_ok, {
+        'total': str(total), 'fidlist': fidlist,
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
 
 
 @app.route('/app/register', methods=['Post'])
@@ -90,7 +112,7 @@ def upload_avatar(user):
     return jsonify(dic_avatar_ok), HTTP_OK
 
 
-@app.route('/app/user/get_avatar', methods=['Get'])
+@app.route('/app/user/get_avatar', methods=['Post'])
 @auth_token
 def get_avatar(user):
     photo = user.photo.read()
@@ -114,8 +136,11 @@ def upload(user):
             user_file = UserFile(name=name, date=datetime.now(), public=public)
             user_file.user = user
             user_file.file = file_field
+
             file_field.sum_point += 1
-            user_file.classify = UserFile.objects(file=file_field).first().classify
+            otherUserfile = UserFile.objects(file=file_field).first()
+            user_file.classify = otherUserfile.classify
+            user_file.text = otherUserfile.text
             user_file.user_classify = user_file.classify.name
             user_file.save()
             return jsonify(get_dict(dic_upload_create_ok, {'fid': str(user_file.id, 'utf-8'),
@@ -135,7 +160,9 @@ def upload(user):
             file_field.save()
             user_file.user = user
             user_file.file = file_field
-            user_file.classify = UserFile.objects(file=file_field).first().classify
+            otherUserfile=UserFile.objects(file=file_field).first()
+            user_file.classify = otherUserfile.classify
+            user_file.text = otherUserfile.text
             user_file.user_classify = user_file.classify.name
             user_file.save()
             return jsonify(get_dict(dic_upload_create_ok, {'fid': str(user_file.id),
@@ -150,12 +177,12 @@ def upload(user):
             except TypeError as e:
                 return jsonify(dic_comm_format_error), HTTP_Bad_Request
             file_field.summary = summary
-            file_field.text = text
             file_like = io.BytesIO(file)
             file_field.file.put(file_like)
             file_field.save()
             user_file.user = user
             user_file.file = file_field
+            user_file.text=text
             user_file.classify = classify
             user_file.user_classify = user_file.classify.name
             user_file.save()
@@ -166,7 +193,7 @@ def upload(user):
         return jsonify(dic_comm_format_error), HTTP_Forbidden
 
 
-@app.route('/app/user/getfile', methods=['Get'])
+@app.route('/app/user/getfile', methods=['Post'])
 @auth_token
 def getfile(user):
     fid = request.json.get('fid')
@@ -218,16 +245,18 @@ def modifyfile(user):
         return jsonify(dic_comm_format_error), HTTP_Forbidden
 
 
-@app.route('/app/user/modify', methods=['POST'])
+@app.route('/app/user/modifyinfo', methods=['POST'])
 @auth_token
 def user_modify(user):
+    print("modify")
     name = request.json.get('name')
     birth = request.json.get('birth')
     password = request.json.get('password')
     if not password and not name and not birth:
         return jsonify(dic_modify_none), HTTP_Forbidden
-    user.name = name if name else user.name
-    user.birth = birth if birth else user.birth
+    user.name = name if  name else user.name
+    user.birth = birth if  birth else user.birth
+    user.phone=user.phone
     user.hash_password(password)
     try:
         user.save()
@@ -258,7 +287,7 @@ def user_info(user):
             return jsonify(dic_comm_not_found), HTTP_NotFound
 
 
-@app.route('/app/user/getownfilelist', methods=['Get'])
+@app.route('/app/user/getownfilelist', methods=['Post'])
 @auth_token
 def get_ownfilelist(user):
     res = UserFile.objects(user=user, isfavorite=False)
@@ -270,22 +299,45 @@ def get_ownfilelist(user):
     summarylist = []
     public = []
     for i in res:
-        fidlist.append(i.id)
+        fidlist.append(str(i.id))
         namelist.append(i.name)
-        datelist.append(i.date)
+        datelist.append(str(i.date))
         classifylist.append(i.user_classify)
         summarylist.append(i.file.summary)
         public.append(i.public)
+
     return jsonify(get_dict(dic_comm_ok, {
-        'total': total, 'fidlist': str(fidlist),
+        'total': str(total), 'fidlist': str(fidlist),
         'namelist': namelist, 'datelist': datelist,
         'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
 
 
-@app.route('/app/user/getfilelist', methods=['Get'])  # 获取推荐列表
+@app.route('/app/user/getfilelist', methods=['Post'])  # 获取推荐列表
 @auth_token
 def getfilelist(user):
-    pass
+    res = UserFile.objects(user=user, isfavorite=False)
+    total = len(res)
+    fidlist = []
+    namelist = []
+    datelist = []
+    classifylist = []
+    summarylist = []
+    public = []
+    for i in res:
+        fidlist.append(str(i.id))
+        namelist.append(i.name)
+        datelist.append(str(i.date))
+        classifylist.append(i.user_classify)
+        summarylist.append(i.file.summary)
+        public.append(i.public)
+    print({
+        'total': str(total), 'fidlist': fidlist,
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'public': public})
+    return jsonify(get_dict(dic_comm_ok, {
+        'total': str(total), 'fidlist': fidlist,
+        'namelist': namelist, 'datelist': datelist,
+        'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
 
 
 @app.route('/app/user/favorite', methods=['Post'])
@@ -310,7 +362,7 @@ def favorite(user):
             summarylist.append(i.file.summary)
             public.append(i.public)
         return jsonify(get_dict(dic_comm_ok, {
-            'total': total, 'fidlist': str(fidlist),
+            'total': total, 'fidlist': fidlist,
             'namelist': namelist, 'datelist': datelist,
             'classifylist': classifylist, 'summarylist': summarylist, 'public': public}))
     elif fid and not cancel:
@@ -350,7 +402,7 @@ def favorite(user):
 def search(user):
     keyword = request.json.get('keyword')
     own = search_own(user,keyword=keyword)
-    other=search(user,keyword)
+    other=search_other(user,keyword)
     own.update(other)
     own.update(dic_search_ok)
     return jsonify(own),HTTP_OK
@@ -403,5 +455,5 @@ def search(user):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True, host='10.206.11.197')
+    #app.run(debug=True, host='10.206.17.166')
     app.run(debug=True)
