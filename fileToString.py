@@ -32,8 +32,8 @@ def handle_pdf(Bytes):
     return res.decode('utf-8')
 
 
-def handle_html(Bytes):
-    return 'html'
+# def handle_html(Bytes):
+#     return 'html'
 
 
 with open('1.pdf', 'rb') as f:

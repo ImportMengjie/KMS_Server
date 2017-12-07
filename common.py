@@ -11,7 +11,7 @@ def typeList():
     return {
         "D0CF11E0": ('doc',handle_doc),
         "255044462D312E": ('pdf',handle_pdf),
-        "68746D6C3E":('html',handle_html),
+        #"68746D6C3E":('html',handle_html),
         "504B030414": ('docx',handle_docx)
     }
 
