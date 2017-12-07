@@ -172,17 +172,18 @@ def upload(user):
             file_field = File(upload_user=user, md5=md5, upload_date=datetime.now())
             try:
                 text = handle_file(file)
-                summary = handle_summary(file)
-                classify = handle_classify(file, summary, text)
+                summary = handle_summary(text[0])
+                classify = handle_classify(file, summary, text[0])
             except TypeError as e:
                 return jsonify(dic_comm_format_error), HTTP_Bad_Request
             file_field.summary = summary
             file_like = io.BytesIO(file)
             file_field.file.put(file_like)
+            file_field.file_type=text[1]
             file_field.save()
             user_file.user = user
             user_file.file = file_field
-            user_file.text=text
+            user_file.text=text[0]
             user_file.classify = classify
             user_file.user_classify = user_file.classify.name
             user_file.save()
@@ -355,7 +356,7 @@ def favorite(user):
         summarylist = []
         public = []
         for i in res:
-            fidlist.append(i.id)
+            fidlist.append(str(i.id))
             namelist.append(i.name)
             datelist.append(i.date)
             classifylist.append(i.user_classify)
@@ -455,5 +456,5 @@ def search(user):
 
 
 if __name__ == '__main__':
-    #app.run(debug=True, host='10.206.17.166')
-    app.run(debug=True)
+    app.run(debug=True, host='10.206.11.143')
+    #app.run(debug=True)

@@ -3,6 +3,7 @@ import base64
 import io
 import model
 import filetype
+import struct
 
 url = 'http://localhost:5000/'
 token = '3fceab95b1e7544bfe2c8886f50da0941fc9a531'
@@ -17,7 +18,8 @@ def typeList():
         "255044462D312E": 'pdf',
         "3C3F786D6C":'xml',
         "68746D6C3E":'html',
-        "7B5C727466":'rtf'}
+        "7B5C727466":'rtf',
+        "504B030414":'docx'}
 # 字节码转16进制字符串
 def bytes2hex(bytes):
     num = len(bytes)
@@ -45,7 +47,8 @@ def filetype2(filename):
     return ftype
 
 def testfiletype():
-    print(filetype.guess('1'))
+    print(filetype2('1.doc'))
+    print(filetype2('2.docx'))
 
 
 def uploadfile(name,filename):
@@ -97,7 +100,7 @@ def search():
     req = requests.post(url + 'app/user/search', json=payload)
     print(req.json())
 
-#testfiletype()
+testfiletype()
 # modifyinfo()
 #uploadfile('sbsbsbs我是sb啊','1')
 # uploadfile('我是doc,s李大帅b333,我是你爸爸','1.doc')
@@ -108,4 +111,4 @@ def search():
 # getownfilelist()
 #favorite()
 #getfilelist()
-search()
+#search()

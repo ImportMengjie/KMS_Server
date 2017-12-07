@@ -46,6 +46,7 @@ class File(db.Document):
     file = db.FileField()
     summary = db.StringField()
     text = db.StringField()
+    file_type=db.StringField()
 
 
 class UserFile(db.Document):
