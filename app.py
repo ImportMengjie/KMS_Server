@@ -175,7 +175,11 @@ def upload(user):
                 summary = handle_summary(text[0])
                 classify = handle_classify(file, summary, text[0])
             except TypeError as e:
+                print(e)
                 return jsonify(dic_comm_format_error), HTTP_Bad_Request
+            except Exception as e:
+                print(e)
+                return jsonify(dic_comm_format_error),HTTP_Bad_Request
             file_field.summary = summary
             file_like = io.BytesIO(file)
             file_field.file.put(file_like)
@@ -456,5 +460,5 @@ def search(user):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='10.206.11.143')
-    #app.run(debug=True)
+    #app.run(debug=True, host='10.206.11.143')
+    app.run(debug=True)

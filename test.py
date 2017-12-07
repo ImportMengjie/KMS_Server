@@ -6,7 +6,7 @@ import filetype
 import struct
 
 url = 'http://localhost:5000/'
-token = '3fceab95b1e7544bfe2c8886f50da0941fc9a531'
+token = 'aef05c8e1d18ac5c534f86431eea3eaa925f667f'
 #token='202f4a91a986dacb1d32e9839c9f870447425f65'
 
 # 支持文件类型
@@ -54,7 +54,7 @@ def testfiletype():
 def uploadfile(name,filename):
     with open(filename, 'rb') as f:
         data = f.read()
-        print(data)
+        #print(data)
         data = base64.b64encode(data)
         payload = {'token': token, 'data': str(data, 'utf-8'), 'name': name,
                    'public': True}
@@ -100,12 +100,14 @@ def search():
     req = requests.post(url + 'app/user/search', json=payload)
     print(req.json())
 
-testfiletype()
+# testfiletype()
 # modifyinfo()
-#uploadfile('sbsbsbs我是sb啊','1')
-# uploadfile('我是doc,s李大帅b333,我是你爸爸','1.doc')
-# uploadfile('我是一章pdf我3李大帅321是你爷爷','1.pdf')
-# uploadfile('我是一张图片狗12李大帅1我是sb','1.png')
+uploadfile('文本文件1','1')
+uploadfile('我是doc','1.doc')
+uploadfile('我是docx啊','1.docx')
+uploadfile('PDF11','1.pdf')
+uploadfile('图片','1.png')
+uploadfile('文本文件2','2')
 #getfile()
 # modifyfile()
 # getownfilelist()

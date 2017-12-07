@@ -33,11 +33,11 @@ def filetype(file_bytes:bytes):
     tl = typeList()
     ftype = None
     for hcode in tl.keys():
-        numOfBytes = len(hcode[0]) // 2  # 需要读多少字节
+        numOfBytes = len(hcode) // 2  # 需要读多少字节
         binfile.seek(0)  # 每次读取都要回到文件头，不然会一直往后读取
         hbytes = struct.unpack_from("B" * numOfBytes, binfile.read(numOfBytes))  # 一个 "B"表示一个字节
         f_hcode = bytes2hex(hbytes)
-        if f_hcode == hcode[0]:
+        if f_hcode == hcode:
             ftype = tl[hcode]
             break
     binfile.close()
@@ -72,14 +72,14 @@ def get_dict(dic, add):
 
 def handle_file(data):
     kind = filetype(data)
-    string=None
     if kind == None:
+        string = None
         string=string_encoding(data)
         if string is None:
             raise TypeError('不支持的文件类型')
         return string,'txt'
     else:
-        return kind[1](data)
+        return kind[1](data),kind[0]
 
 def handle_summary(text):
     return 'It is summary'
