@@ -14,7 +14,14 @@
 # RUN export PATH=/usr/local/mongodb/bin:$PATH
 # RUN mkdir -p /data/dbro
 
-FROM kms:v0.2
-WORKDIR /app
-COPY ./* /app/
-RUN pip3 install -r requirements.txt
+# FROM kms:v0.2
+# WORKDIR /app
+# COPY ./* /app/
+# RUN pip3 install -r requirements.txt
+
+FROM kms:v0.3
+WORKDIR /require 
+COPY require/antiword-0.37.tar.gz /require/
+RUN tar -xvf antiword-0.37.tar.gz
+WORKDIR /require/antiword-0.37/
+RUN make&&make install
