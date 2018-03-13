@@ -1,0 +1,8 @@
+Flask==0.12.2
+requests==2.12.4
+PyPDF2==1.26.0
+docx==0.2.4
+filetype==1.0.0
+flask_mongoengine==0.9.5
+mongoengine==0.15.0
+passlib==1.7.1
